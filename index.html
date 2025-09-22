@@ -105,7 +105,8 @@ function startGame(data){
   const ctx = canvas.getContext("2d");
   const flower = data.flower.split(" ")[0]; // emoji only
   let birdY = canvas.height/2, birdVel = 0;
-  const gravity = 0.45, jump = -8;
+  const gravity = 0.30;   // 🌟 slower fall (was 0.45)
+  const jump = -7.5;      // slightly softer jump
   const pillars = [];
   let score = 0;
   const targetScore = 5;
@@ -121,7 +122,7 @@ function startGame(data){
   });
 
   function addPillar(){
-    const gap = 170; // bigger gap
+    const gap = 200; // 🌟 much larger vertical gap between top and bottom
     const topH = Math.random()*(canvas.height-gap-40)+20;
     pillars.push({x:canvas.width, top:topH, width:50});
   }
@@ -141,14 +142,14 @@ function startGame(data){
     if(Math.random() < 0.02) addPillar();
     for(let i=pillars.length-1;i>=0;i--){
       const p = pillars[i];
-      p.x -= 1.8; // slower speed
+      p.x -= 1.8; // slower horizontal speed
       ctx.font="24px serif";
       for(let y=0;y<p.top;y+=24) ctx.fillText(flower,p.x,y);
-      for(let y=p.top+170;y<canvas.height;y+=24) ctx.fillText(flower,p.x,y);
+      for(let y=p.top+200;y<canvas.height;y+=24) ctx.fillText(flower,p.x,y);
 
       // collision
       if(60+15>p.x && 60-15<p.x+p.width){
-        if(birdY-15<p.top || birdY+15>p.top+170) gameOver = true;
+        if(birdY-15<p.top || birdY+15>p.top+200) gameOver = true;
       }
       // scoring
       if(p.x + p.width < 60 && !p.scored){ score++; p.scored = true; }
