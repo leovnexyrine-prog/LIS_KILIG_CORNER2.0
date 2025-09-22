@@ -4,74 +4,42 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>🌸 LIS Kilig Corner 🌸</title>
+
+<!-- QR Code Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <style>
-  body { font-family: sans-serif; text-align: center; padding: 20px; background: #fff0f5; }
-  h1 { color: #d63384; }
-  .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 420px; margin: 20px auto; }
-  input, textarea, button { width: 90%; padding: 10px; margin: 8px 0; border-radius: 12px; border: 1px solid #ccc; }
-  button.main { 
-    background: #ff85b3; 
-    color: white; 
-    border: none; 
-    cursor: pointer; 
-    font-weight: bold; 
-    transition: all 0.3s ease; 
-  }
-  button.main:hover { background: #ff6399; }
-  button.main:active {
-    box-shadow: 0 0 15px #ff85b3, 0 0 30px #ff85b3;
-    transform: scale(0.98);
-  }
-  .flowers { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
-  .flower-btn {
-    background: #ffd6e8;
-    border: 2px solid #ff85b3;
-    padding: 10px 20px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-  }
-  .flower-btn:hover {
-    background: #ffb3d9;
-    box-shadow: 0 0 12px #ff85b3;
-  }
-  .flower-btn.selected {
-    background: #ff85b3;
-    color: white;
-    box-shadow: 0 0 15px #ff85b3, 0 0 30px #ff85b3;
-  }
-  #qr { margin-top: 15px; }
-  #gameOverlay {
-    display:none;
-    position:fixed;
-    inset:0;
-    background: rgba(0,0,0,0.6);
-    z-index:1000;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-  }
-  #gameCard {
-    background:white;
-    border-radius:16px;
-    padding:10px;
-    box-shadow:0 8px 32px rgba(0,0,0,0.4);
-    max-width:760px;
-    width:100%;
-  }
-  #gameCanvas { width:100%; height:430px; display:block; background: linear-gradient(#9fe8ff, #b3ffea); border-radius:12px; touch-action:none; }
-  #gameInfo { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
-  #finishNotice { display:none; padding:12px; border-radius:12px; background:#fff3f8; margin-top:8px; color:#8a1f4b; font-weight:bold; }
+  body{font-family:sans-serif;text-align:center;padding:20px;background:#fff0f5;}
+  h1{color:#d63384;}
+  .card{background:#fff;padding:20px;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.1);max-width:420px;margin:20px auto;}
+  input,textarea,button{width:90%;padding:10px;margin:8px 0;border-radius:12px;border:1px solid #ccc;}
+  button.main{background:#ff85b3;color:#fff;border:none;font-weight:bold;cursor:pointer;transition:.3s;}
+  button.main:hover{background:#ff6399;}
+  .flowers{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:10px 0;}
+  .flower-btn{background:#ffd6e8;border:2px solid #ff85b3;padding:10px 20px;border-radius:12px;cursor:pointer;transition:.3s;}
+  .flower-btn.selected{background:#ff85b3;color:#fff;box-shadow:0 0 15px #ff85b3;}
+  #qr{margin-top:15px;}
+
+  /* Game overlay */
+  #gameOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;
+               align-items:center;justify-content:center;padding:20px;}
+  #gameCard{background:#fff;border-radius:16px;padding:10px;box-shadow:0 8px 32px rgba(0,0,0,.4);
+            max-width:760px;width:100%;}
+  #gameCanvas{width:100%;height:430px;display:block;background:linear-gradient(#9fe8ff,#b3ffea);
+              border-radius:12px;touch-action:none;}
+  #gameInfo{display:flex;justify-content:space-between;margin-top:8px;}
+  #finishNotice{display:none;padding:12px;border-radius:12px;background:#fff3f8;margin-top:8px;
+                color:#8a1f4b;font-weight:bold;}
 </style>
 </head>
 <body>
 <h1>🌸 LIS Kilig Corner 🌸</h1>
 
+<!-- Creator view -->
 <div id="create" class="card">
   <input id="receiver" placeholder="Recipient's Name 💌">
   <textarea id="message" placeholder="Your Message ✨"></textarea>
+
   <p><strong>Choose a Flower:</strong></p>
   <div class="flowers">
     <button class="flower-btn" data-flower="🌷 Tulip">🌷 Tulip</button>
@@ -79,229 +47,206 @@
     <button class="flower-btn" data-flower="🌻 Sunflower">🌻 Sunflower</button>
     <button class="flower-btn" data-flower="🌼 Daisy">🌼 Daisy</button>
   </div>
+
   <button class="main" onclick="makeLink()">💌 Generate Bouquet Link + QR</button>
   <div id="link"></div>
   <div id="qr"></div>
 </div>
 
+<!-- Receiver view (revealed after game) -->
 <div id="view" class="card" style="display:none;">
   <h2>💌 Bouquet for <span id="viewName"></span></h2>
   <div style="font-size:3rem" id="viewFlower"></div>
   <p id="viewMsg"></p>
 </div>
 
+<!-- Game overlay -->
 <div id="gameOverlay">
   <div id="gameCard">
     <canvas id="gameCanvas" width="760" height="430"></canvas>
     <div id="gameInfo">
       <div>Score: <span id="score">0</span></div>
-      <div>
-        <button onclick="pauseGame()">Pause</button>
-        <button onclick="restartGame()">Restart</button>
-      </div>
+      <button onclick="restartGame()">Restart</button>
     </div>
-    <div id="finishNotice">Congrats! You beat the game. The bouquet will appear below.</div>
+    <div id="finishNotice">🎉 You won! The bouquet will now appear.</div>
   </div>
 </div>
 
 <script>
+/* ---------- CONFIG ---------- */
+const SITE_BASE = "https://USERNAME.github.io/REPO"; // ← EDIT THIS
+const TARGET_SCORE = 10; // points needed to unlock bouquet
+/* ----------------------------- */
+
 let selectedFlower = "";
-document.querySelectorAll(".flower-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".flower-btn").forEach(b => b.classList.remove("selected"));
+document.querySelectorAll(".flower-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".flower-btn").forEach(b=>b.classList.remove("selected"));
     btn.classList.add("selected");
     selectedFlower = btn.dataset.flower;
   });
 });
 
 function makeLink(){
-  const receiver = document.getElementById("receiver").value.trim() || "Recipient";
-  const message = document.getElementById("message").value.trim() || "(No message)";
-  if(!selectedFlower){ alert("Please select a flower 🌸"); return; }
-  const payload = encodeURIComponent(JSON.stringify({receiver, message, flower: selectedFlower}));
-  const url = window.location.origin + window.location.pathname + "?data=" + payload;
-  document.getElementById("link").innerHTML =
-    `<p>Share this link:</p><a href="${url}" target="_blank">${url}</a>`;
-  document.getElementById("qr").innerHTML = "";
-  new QRCode(document.getElementById("qr"), { text: url, width: 220, height: 220 });
+  const receiver = receiverEl.value.trim() || "Recipient";
+  const message  = messageEl.value.trim()  || "(No message)";
+  if(!selectedFlower){alert("Please select a flower 🌸");return;}
+  const payload = encodeURIComponent(JSON.stringify({receiver,message,flower:selectedFlower}));
+  const url = `${SITE_BASE}/?data=${payload}`;
+  linkEl.innerHTML = `<p>Share this link:</p><a href="${url}" target="_blank">${url}</a>`;
+  qrEl.innerHTML = "";
+  new QRCode(qrEl,{text:url,width:220,height:220});
 }
 
-(function(){
-  const params = new URLSearchParams(window.location.search);
-  if(params.has("data")){
-    try {
-      const obj = JSON.parse(decodeURIComponent(params.get("data")));
-      window.__bouquetData = obj;
-      startGameWithFlower(obj.flower);
-    } catch(e) { console.error("Invalid bouquet data", e); }
-  }
-})();
-
-function revealBouquet() {
-  const obj = window.__bouquetData;
-  if(!obj) return;
-  document.getElementById("create").style.display = "none";
-  document.getElementById("view").style.display = "block";
-  document.getElementById("viewName").innerText = obj.receiver;
-  document.getElementById("viewFlower").innerText = obj.flower.split(" ")[0];
-  document.getElementById("viewMsg").innerText = obj.message;
+const params = new URLSearchParams(window.location.search);
+if(params.has("data")){
+  try{
+    const obj = JSON.parse(decodeURIComponent(params.get("data")));
+    window.__bouquetData = obj;
+    startGame(obj.flower);
+  }catch(e){console.error(e);}
 }
 
-let canvas, ctx;
-let cw = 760, ch = 430;
-let bird, pipes, frameCount, gameInterval, running;
-let flowerEmoji = "🌷";
-let scoreEl = null;
-let targetScore = 5; // 🔑 Must reach this score to unlock bouquet
+function revealBouquet(){
+  createEl.style.display="none";
+  viewEl.style.display="block";
+  viewName.textContent = window.__bouquetData.receiver;
+  viewFlower.textContent = window.__bouquetData.flower.split(" ")[0];
+  viewMsg.textContent = window.__bouquetData.message;
+}
 
-function startGameWithFlower(flowerString){
-  flowerEmoji = (flowerString && flowerString.length>0) ? flowerString.trim().split(" ")[0] : "🌷";
-  document.getElementById("gameOverlay").style.display = "flex";
-  document.getElementById("finishNotice").style.display = "none";
-  scoreEl = document.getElementById("score");
-  canvas = document.getElementById("gameCanvas");
-  ctx = canvas.getContext("2d");
+/* ---------- DOM references ---------- */
+const receiverEl = document.getElementById("receiver");
+const messageEl  = document.getElementById("message");
+const linkEl     = document.getElementById("link");
+const qrEl       = document.getElementById("qr");
+const createEl   = document.getElementById("create");
+const viewEl     = document.getElementById("view");
+const viewName   = document.getElementById("viewName");
+const viewFlower = document.getElementById("viewFlower");
+const viewMsg    = document.getElementById("viewMsg");
+const gameOverlay= document.getElementById("gameOverlay");
+const gameCanvas = document.getElementById("gameCanvas");
+const scoreEl    = document.getElementById("score");
+const finishNote = document.getElementById("finishNotice");
+
+/* ---------- Flappy Game ---------- */
+let ctx, bird, pipes, frame, loop, flowerEmoji="🌷";
+
+function startGame(flower){
+  flowerEmoji = flower.split(" ")[0];
+  gameOverlay.style.display="flex";
+  ctx = gameCanvas.getContext("2d");
   resetGame();
-  attachInputHandlers();
-  running = true;
-  gameInterval = setInterval(gameLoop, 1000/60);
+  window.addEventListener("keydown", flapKey);
+  gameCanvas.addEventListener("mousedown", flap);
+  loop = setInterval(update, 1000/60);
 }
 
 function resetGame(){
-  bird = { x: 120, y: ch/2, vy: 0, width: 28, height: 20, gravity: 0.6, lift: -10, rotation: 0 };
-  pipes = [];
-  frameCount = 0;
-  scoreEl && (scoreEl.innerText = 0);
+  bird = {x:120,y:215,vy:0,w:28,h:20,gravity:0.6,lift:-10};
+  pipes=[]; frame=0; scoreEl.textContent="0";
   spawnPipe(120);
 }
 
-function spawnPipe(offsetX=0){
-  const gap = 120;
-  const minY = 60;
-  const maxY = ch - 60 - gap;
-  const top = Math.floor(Math.random()*(maxY-minY+1)+minY);
-  pipes.push({ x: cw + offsetX, top: top, gap: gap, passed: false });
-}
+function flap(){ bird.vy = bird.lift; }
+function flapKey(e){ if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();flap();} }
 
-function gameLoop(){ update(); draw(); }
+function spawnPipe(offset=0){
+  const gap=120,min=60,max=430-60-gap;
+  const top=Math.floor(Math.random()*(max-min+1)+min);
+  pipes.push({x:760+offset,top,gap,passed:false});
+}
 
 function update(){
-  frameCount++;
+  frame++;
   bird.vy += bird.gravity;
-  bird.y += bird.vy;
-  bird.rotation = Math.max(-0.6, Math.min(0.6, bird.vy / 10));
-  if(bird.y + bird.height/2 >= ch || bird.y - bird.height/2 <= 0){ gameOver(); return; }
+  bird.y  += bird.vy;
+
+  if(bird.y<0 || bird.y+bird.h>430){ gameOver(); return; }
+
   for(let i=pipes.length-1;i>=0;i--){
-    pipes[i].x -= 2.6;
-    if(pipes[i].x < -80){ pipes.splice(i,1); }
-    else {
-      if(pipes.length < 4 && (frameCount % 90 === 0)) spawnPipe();
-      if(!pipes[i].passed && pipes[i].x + 40 < bird.x){ pipes[i].passed = true; increaseScore(); }
-      if(rectIntersect(bird.x - bird.width/2, bird.y - bird.height/2, bird.width, bird.height,
-                       pipes[i].x, 0, 50, pipes[i].top)) { gameOver(); return; }
-      if(rectIntersect(bird.x - bird.width/2, bird.y - bird.height/2, bird.width, bird.height,
-                       pipes[i].x, pipes[i].top + pipes[i].gap, 50, ch - (pipes[i].top + pipes[i].gap))) { gameOver(); return; }
+    const p=pipes[i];
+    p.x -= 2.6;
+    if(p.x<-60) pipes.splice(i,1);
+    else{
+      if(pipes.length<4 && frame%90===0) spawnPipe();
+      if(!p.passed && p.x+40<bird.x){ p.passed=true; score(); }
+      if(hit(bird,p)){ gameOver(); return; }
     }
   }
+
+  draw();
 }
 
-function rectIntersect(x1,y1,w1,h1,x2,y2,w2,h2){
-  return !(x2 > x1 + w1 || x2 + w2 < x1 || y2 > y1 + h1 || y2 + h2 < y1);
+function score(){
+  const s = +scoreEl.textContent + 1;
+  scoreEl.textContent = s;
+  if(s >= TARGET_SCORE) win();
 }
 
-function increaseScore(){
-  const current = parseInt(scoreEl.innerText || "0", 10);
-  scoreEl.innerText = current + 1;
-  if(current + 1 >= targetScore) winGame();
+function hit(b,p){
+  return rect(b.x,b.y,b.w,b.h,p.x,0,50,p.top) ||
+         rect(b.x,b.y,b.w,b.h,p.x,p.top+p.gap,50,430-(p.top+p.gap));
 }
-
-function gameOver(){ stopGame(); alert("Oops! You crashed. Try again to access the bouquet 💌"); }
-function winGame(){
-  stopGame();
-  document.getElementById("finishNotice").style.display = "block";
-  setTimeout(() => {
-    document.getElementById("gameOverlay").style.display = "none";
-    revealBouquet();
-  }, 800);
+function rect(x1,y1,w1,h1,x2,y2,w2,h2){
+  return !(x2>x1+w1 || x2+w2<x1 || y2>y1+h1 || y2+h2<y1);
 }
-function stopGame(){ running = false; if(gameInterval) clearInterval(gameInterval); detachInputHandlers(); }
-
-function pauseGame(){
-  if(running){ stopGame(); document.getElementById("finishNotice").innerText = "Paused"; document.getElementById("finishNotice").style.display = "block";
-    setTimeout(()=>document.getElementById("finishNotice").style.display = "none", 600);
-  } else { running = true; gameInterval = setInterval(gameLoop, 1000/60); document.getElementById("finishNotice").style.display = "none"; }
-}
-function restartGame(){ stopGame(); resetGame(); running = true; gameInterval = setInterval(gameLoop, 1000/60); document.getElementById("finishNotice").style.display = "none"; }
-
-function flap(){ bird.vy = bird.lift; }
-function attachInputHandlers(){
-  canvas.addEventListener("mousedown", flap);
-  canvas.addEventListener("touchstart", function(e){ e.preventDefault(); flap(); }, {passive:false});
-  window.addEventListener("keydown", keyHandler);
-}
-function detachInputHandlers(){
-  canvas.removeEventListener("mousedown", flap);
-  canvas.removeEventListener("touchstart", flap);
-  window.removeEventListener("keydown", keyHandler);
-}
-function keyHandler(e){ if(e.code === "Space" || e.code === "ArrowUp") { e.preventDefault(); flap(); } }
 
 function draw(){
-  ctx.clearRect(0,0,cw,ch);
-  drawBackground();
+  ctx.clearRect(0,0,760,430);
+  ctx.fillStyle="#aef";
+  ctx.fillRect(0,0,760,430);
   drawPipes();
   drawBird();
 }
-function drawBackground(){
-  ctx.fillStyle = "rgba(0,0,0,0.04)";
-  ctx.fillRect(0,ch-28,cw,28);
-  ctx.globalAlpha = 0.12;
-  const cloudOffset = (frameCount/2)%cw;
-  ctx.font = "40px serif";
-  ctx.fillText("☁️ ☁️", cw - cloudOffset, 60);
-  ctx.globalAlpha = 1;
-}
 function drawBird(){
-  const x = bird.x, y = bird.y;
   ctx.save();
-  ctx.translate(x,y);
-  ctx.rotate(bird.rotation);
-  ctx.beginPath();
-  ctx.fillStyle = "#ff82b3";
-  ctx.ellipse(0,0,18,14,0,0,Math.PI*2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.fillStyle = "#ffd1e6";
-  ctx.ellipse(-2,2,8,5, -0.4,0,Math.PI*2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.fillStyle = "white";
-  ctx.arc(6,-4,4,0,Math.PI*2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.fillStyle = "black";
-  ctx.arc(7,-4,1.6,0,Math.PI*2);
-  ctx.fill();
+  ctx.translate(bird.x,bird.y);
+  ctx.fillStyle="#ff82b3";
+  ctx.beginPath();ctx.ellipse(0,0,18,14,0,0,2*Math.PI);ctx.fill();
+  ctx.fillStyle="#ffd1e6";
+  ctx.beginPath();ctx.ellipse(-2,2,8,5,0,0,2*Math.PI);ctx.fill();
   ctx.restore();
 }
 function drawPipes(){
-  for(let i=0;i<pipes.length;i++){
-    const p = pipes[i], x = p.x, w = 50;
-    ctx.fillStyle = "#7fbf7f33";
-    ctx.fillRect(x, 0, w, p.top);
-    ctx.fillRect(x, p.top + p.gap, w, ch - (p.top + p.gap));
-    ctx.font = "28px serif";
-    ctx.textAlign = "center";
-    const f = flowerEmoji;
-    const topCount = Math.floor((p.top)/30);
-    for(let j=0;j<topCount;j++) ctx.fillText(f, x + w/2, 18 + j*30);
-    const bottomStart = p.top + p.gap;
-    const bottomCount = Math.floor((ch - bottomStart)/30);
-    for(let j=0;j<bottomCount;j++) ctx.fillText(f, x + w/2, bottomStart + 18 + j*30);
-    ctx.fillStyle = "#6f6f6f22";
-    ctx.fillRect(x-6, p.top - 6, w+12, 8);
-    ctx.fillRect(x-6, p.top + p.gap -2, w+12, 8);
-  }
+  ctx.font="28px serif";ctx.textAlign="center";
+  pipes.forEach(p=>{
+    ctx.fillStyle="#7fbf7f33";
+    ctx.fillRect(p.x,0,50,p.top);
+    ctx.fillRect(p.x,p.top+p.gap,50,430-(p.top+p.gap));
+    const topCount=Math.floor(p.top/30);
+    for(let j=0;j<topCount;j++) ctx.fillText(flowerEmoji,p.x+25,18+j*30);
+    const bStart=p.top+p.gap;
+    const bCount=Math.floor((430-bStart)/30);
+    for(let j=0;j<bCount;j++) ctx.fillText(flowerEmoji,p.x+25,bStart+18+j*30);
+  });
+}
+
+function gameOver(){
+  stopGame();
+  alert("💥 Oops! Try again to unlock the bouquet.");
+}
+
+function win(){
+  stopGame();
+  finishNote.style.display="block";
+  setTimeout(()=>{gameOverlay.style.display="none";revealBouquet();},800);
+}
+
+function stopGame(){
+  clearInterval(loop);
+  window.removeEventListener("keydown", flapKey);
+  gameCanvas.removeEventListener("mousedown", flap);
+}
+
+function restartGame(){
+  stopGame();
+  finishNote.style.display="none";
+  resetGame();
+  window.addEventListener("keydown", flapKey);
+  gameCanvas.addEventListener("mousedown", flap);
+  loop = setInterval(update, 1000/60);
 }
 </script>
 </body>
