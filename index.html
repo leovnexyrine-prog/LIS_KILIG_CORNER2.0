@@ -1,3 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>💐 Love Bouquet Game Booth</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    padding: 20px;
+    background: #fff0f5;
+    overflow-x: hidden;
+  }
+  h1 { color: #d63384; }
+  .card {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    max-width: 420px;
+    margin: 20px auto;
+  }
+  input, textarea, select, button {
+    width: 90%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    display: block;
+    font-size: 1rem;
+  }
+  button {
+    background: #ff85b3;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button:hover { background: #ff6399; }
+  #qr { margin-top: 15px; }
+  canvas {
+    background: #b3e5fc;
+    display: block;
+    margin: 0 auto;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+</style>
+</head>
+<body>
+<h1>🌸 Love Bouquet Booth 🌸</h1>
+
+<!-- Creator Section -->
+<div id="create" class="card">
+  <input id="receiver" placeholder="Recipient's Name 💌">
+  <textarea id="message" placeholder="Your Message ✨"></textarea>
+
+  <label for="flower"><strong>Choose a Flower:</strong></label>
+  <select id="flower">
+    <option value="🌹 Rose">🌹 Rose</option>
+    <option value="🌻 Sunflower">🌻 Sunflower</option>
+    <option value="🌷 Tulip">🌷 Tulip</option>
+    <option value="🌼 Daisy">🌼 Daisy</option>
+    <option value="🌸 Cherry Blossom">🌸 Cherry Blossom</option>
+    <option value="🌺 Hibiscus">🌺 Hibiscus</option>
+    <option value="💜 Lavender">💜 Lavender</option>
+    <option value="🤍 Lily">🤍 Lily</option>
+  </select>
+
+  <button onclick="makeLink()">💌 Generate Bouquet Link + QR</button>
+  <div id="link"></div>
+  <div id="qr"></div>
+</div>
+
+<!-- Game Canvas -->
+<canvas id="gameCanvas" width="360" height="480" style="display:none;"></canvas>
+
+<!-- Message View -->
+<div id="view" class="card" style="display:none;">
+  <h2>💌 Bouquet for <span id="viewName"></span></h2>
+  <div style="font-size:3rem" id="viewFlower"></div>
+  <p id="viewMsg"></p>
+</div>
+
 <script>
 function makeLink(){
   const receiver = document.getElementById("receiver").value.trim() || "Recipient";
@@ -15,27 +101,28 @@ function makeLink(){
 
 // ---------- Game ----------
 function startGame(data){
-  const canvas=document.getElementById("gameCanvas");
-  const ctx=canvas.getContext("2d");
-  const flower=data.flower.split(" ")[0]; // emoji
-  let birdY=canvas.height/2, birdVel=0;
-  const gravity=0.45, jump=-8;
-  const pillars=[];
-  let score=0;
-  const targetScore=5; // how many gaps to pass to win
-  const birdColor="pink";
-  let gameOver=false;
-  let restartReady=false;
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+  const flower = data.flower.split(" ")[0]; // emoji only
+  let birdY = canvas.height/2, birdVel = 0;
+  const gravity = 0.45, jump = -8;
+  const pillars = [];
+  let score = 0;
+  const targetScore = 5;
+  const birdColor = "pink";
+  let gameOver = false;
+  let restartReady = false;
 
-  document.addEventListener("keydown",()=>{if(!gameOver) birdVel=jump;});
+  // Controls
+  document.addEventListener("keydown",()=>{ if(!gameOver) birdVel = jump; });
   canvas.addEventListener("click",()=>{
-      if(!gameOver) birdVel=jump;
-      else if(restartReady) location.reload();
+    if(!gameOver) birdVel = jump;
+    else if(restartReady) location.reload();
   });
 
   function addPillar(){
-    const gap=170; // 🌟 bigger gap
-    const topH=Math.random()*(canvas.height-gap-40)+20;
+    const gap = 170; // bigger gap
+    const topH = Math.random()*(canvas.height-gap-40)+20;
     pillars.push({x:canvas.width, top:topH, width:50});
   }
 
@@ -43,36 +130,36 @@ function startGame(data){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
     // Bird
-    birdVel+=gravity;
-    birdY+=birdVel;
-    ctx.fillStyle=birdColor;
+    birdVel += gravity;
+    birdY += birdVel;
+    ctx.fillStyle = birdColor;
     ctx.beginPath();
     ctx.arc(60,birdY,15,0,Math.PI*2);
     ctx.fill();
 
     // Pillars
-    if(Math.random()<0.02) addPillar();
+    if(Math.random() < 0.02) addPillar();
     for(let i=pillars.length-1;i>=0;i--){
-      const p=pillars[i];
-      p.x-=1.8; // 🌟 slower speed
+      const p = pillars[i];
+      p.x -= 1.8; // slower speed
       ctx.font="24px serif";
       for(let y=0;y<p.top;y+=24) ctx.fillText(flower,p.x,y);
       for(let y=p.top+170;y<canvas.height;y+=24) ctx.fillText(flower,p.x,y);
 
       // collision
       if(60+15>p.x && 60-15<p.x+p.width){
-        if(birdY-15<p.top || birdY+15>p.top+170) gameOver=true;
+        if(birdY-15<p.top || birdY+15>p.top+170) gameOver = true;
       }
-      // score
-      if(p.x+ p.width<60 && !p.scored){ score++; p.scored=true; }
+      // scoring
+      if(p.x + p.width < 60 && !p.scored){ score++; p.scored = true; }
 
-      if(p.x<-p.width) pillars.splice(i,1);
+      if(p.x < -p.width) pillars.splice(i,1);
     }
 
-    // Ground/ceiling
-    if(birdY+15>canvas.height || birdY-15<0) gameOver=true;
+    // Ground/ceiling collision
+    if(birdY+15>canvas.height || birdY-15<0) gameOver = true;
 
-    // Score
+    // Score display
     ctx.fillStyle="#d63384";
     ctx.font="20px Arial";
     ctx.fillText("Score: "+score,10,25);
@@ -80,11 +167,11 @@ function startGame(data){
     if(!gameOver){
       requestAnimationFrame(update);
     } else {
-      if(score>=targetScore){
+      if(score >= targetScore){
         showMessage(data);
       } else {
         ctx.fillText("Game Over! Tap to Restart",60,canvas.height/2);
-        restartReady=true;
+        restartReady = true;
       }
     }
   }
@@ -94,9 +181,9 @@ function startGame(data){
 function showMessage(data){
   document.getElementById("gameCanvas").style.display="none";
   document.getElementById("view").style.display="block";
-  document.getElementById("viewName").innerText=data.receiver;
-  document.getElementById("viewFlower").innerText=data.flower.split(" ")[0];
-  document.getElementById("viewMsg").innerText=data.message;
+  document.getElementById("viewName").innerText = data.receiver;
+  document.getElementById("viewFlower").innerText = data.flower.split(" ")[0];
+  document.getElementById("viewMsg").innerText = data.message;
 }
 
 // ---------- Entry ----------
@@ -105,10 +192,12 @@ function showMessage(data){
   if(params.has("data")){
     try {
       const obj = JSON.parse(decodeURIComponent(params.get("data")));
-      document.getElementById("create").style.display="none";
-      document.getElementById("gameCanvas").style.display="block";
+      document.getElementById("create").style.display = "none";
+      document.getElementById("gameCanvas").style.display = "block";
       startGame(obj);
     } catch(e){ console.error("Invalid bouquet data"); }
   }
 })();
 </script>
+</body>
+</html>
