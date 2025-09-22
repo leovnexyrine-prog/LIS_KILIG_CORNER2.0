@@ -3,148 +3,306 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>🌸 LIS Kilig Corner – Flappy Bouquet</title>
+<title>🌸 LIS Kilig Corner 🌸</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  body{margin:0;font-family:sans-serif;background:#ffeef7;text-align:center;}
-  h1{color:#d63384;margin-top:20px;}
-  .card{background:white;max-width:420px;margin:20px auto;padding:20px;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
-  input,textarea,button{width:90%;padding:10px;margin:8px 0;border-radius:12px;border:1px solid #ccc;}
-  textarea{resize:vertical;}
-  button{background:#ff85b3;color:white;border:none;cursor:pointer;font-weight:bold;transition:.2s;}
-  button:hover{background:#ff6399;}
-  button:active{box-shadow:0 0 15px #ff85b3;transform:scale(.97);}
-  .flowers{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;}
-  .flower-btn{background:#ffd6e8;border:2px solid #ff85b3;padding:10px 18px;border-radius:12px;cursor:pointer;}
-  .flower-btn.selected{background:#ff85b3;color:white;box-shadow:0 0 12px #ff85b3;}
-  #qrGate{margin-top:12px;}
-  canvas{background:#b3e6ff;border-radius:12px;display:none;margin:20px auto;}
-  #reveal{display:none;margin-top:10px;}
+  body { font-family: sans-serif; text-align: center; padding: 20px; background: #fff0f5; }
+  h1 { color: #d63384; }
+  .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 420px; margin: 20px auto; }
+  input, textarea, button { width: 90%; padding: 10px; margin: 8px 0; border-radius: 12px; border: 1px solid #ccc; }
+  button.main { 
+    background: #ff85b3; 
+    color: white; 
+    border: none; 
+    cursor: pointer; 
+    font-weight: bold; 
+    transition: all 0.3s ease; 
+  }
+  button.main:hover { background: #ff6399; }
+  button.main:active {
+    box-shadow: 0 0 15px #ff85b3, 0 0 30px #ff85b3;
+    transform: scale(0.98);
+  }
+  .flowers { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
+  .flower-btn {
+    background: #ffd6e8;
+    border: 2px solid #ff85b3;
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+  .flower-btn:hover {
+    background: #ffb3d9;
+    box-shadow: 0 0 12px #ff85b3;
+  }
+  .flower-btn.selected {
+    background: #ff85b3;
+    color: white;
+    box-shadow: 0 0 15px #ff85b3, 0 0 30px #ff85b3;
+  }
+  #qr { margin-top: 15px; }
+  #gameOverlay {
+    display:none;
+    position:fixed;
+    inset:0;
+    background: rgba(0,0,0,0.6);
+    z-index:1000;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  #gameCard {
+    background:white;
+    border-radius:16px;
+    padding:10px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.4);
+    max-width:760px;
+    width:100%;
+  }
+  #gameCanvas { width:100%; height:430px; display:block; background: linear-gradient(#9fe8ff, #b3ffea); border-radius:12px; touch-action:none; }
+  #gameInfo { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+  #finishNotice { display:none; padding:12px; border-radius:12px; background:#fff3f8; margin-top:8px; color:#8a1f4b; font-weight:bold; }
 </style>
 </head>
 <body>
 <h1>🌸 LIS Kilig Corner 🌸</h1>
 
-<div id="setup" class="card">
+<div id="create" class="card">
   <input id="receiver" placeholder="Recipient's Name 💌">
   <textarea id="message" placeholder="Your Message ✨"></textarea>
   <p><strong>Choose a Flower:</strong></p>
   <div class="flowers">
-    <button class="flower-btn" data-f="🌷 Tulip">🌷 Tulip</button>
-    <button class="flower-btn" data-f="🌹 Rose">🌹 Rose</button>
-    <button class="flower-btn" data-f="🌻 Sunflower">🌻 Sunflower</button>
-    <button class="flower-btn" data-f="🌼 Daisy">🌼 Daisy</button>
+    <button class="flower-btn" data-flower="🌷 Tulip">🌷 Tulip</button>
+    <button class="flower-btn" data-flower="🌹 Rose">🌹 Rose</button>
+    <button class="flower-btn" data-flower="🌻 Sunflower">🌻 Sunflower</button>
+    <button class="flower-btn" data-flower="🌼 Daisy">🌼 Daisy</button>
   </div>
-  <button id="genQR">🔑 Generate QR to Unlock Game</button>
-  <div id="qrGate"></div>
+  <button class="main" onclick="makeLink()">💌 Generate Bouquet Link + QR</button>
+  <div id="link"></div>
+  <div id="qr"></div>
 </div>
-
-<canvas id="game" width="360" height="480"></canvas>
-<button id="reveal" class="card">💌 Reveal Bouquet</button>
 
 <div id="view" class="card" style="display:none;">
   <h2>💌 Bouquet for <span id="viewName"></span></h2>
   <div style="font-size:3rem" id="viewFlower"></div>
   <p id="viewMsg"></p>
-  <div id="link"></div>
-  <div id="qr"></div>
+</div>
+
+<div id="gameOverlay">
+  <div id="gameCard">
+    <canvas id="gameCanvas" width="760" height="430"></canvas>
+    <div id="gameInfo">
+      <div>Score: <span id="score">0</span></div>
+      <div>
+        <button onclick="pauseGame()">Pause</button>
+        <button onclick="restartGame()">Restart</button>
+      </div>
+    </div>
+    <div id="finishNotice">Congrats! You beat the game. The bouquet will appear below.</div>
+  </div>
 </div>
 
 <script>
-let flower="",token="";
-document.querySelectorAll(".flower-btn").forEach(b=>{
-  b.onclick=()=>{document.querySelectorAll(".flower-btn").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");flower=b.dataset.f;}
+let selectedFlower = "";
+document.querySelectorAll(".flower-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".flower-btn").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    selectedFlower = btn.dataset.flower;
+  });
 });
 
-document.getElementById("genQR").onclick=()=>{
-  if(!flower){alert("Pick a flower first 🌸");return;}
-  token=Math.random().toString(36).substr(2,5).toUpperCase();
-  const gate=document.getElementById("qrGate");
-  gate.innerHTML="<p>Scan this QR then type the 5-character code it shows to unlock:</p>";
-  gate.innerHTML+="<p style='font-weight:bold;font-size:1.4rem'>"+token+"</p>";
-  const q=document.createElement("div");gate.appendChild(q);
-  new QRCode(q,{text:"KiligToken:"+token,width:200,height:200});
-  setTimeout(()=>{
-    const attempt=prompt("Enter the 5-character code after scanning:");
-    if(attempt===token){document.getElementById("setup").style.display="none";startGame();}
-    else alert("Wrong code. Generate again.");
-  },500);
-};
-
-/* -------- Flappy Bird -------- */
-const cvs=document.getElementById("game"),ctx=cvs.getContext("2d");
-let bird={x:50,y:150,w:34,h:24,gravity:0.25,vel:0,lift:-4};
-let pipes=[],frame=0,score=0,alive=true;
-
-function startGame(){
-  cvs.style.display="block";
-  document.getElementById("reveal").style.display="inline-block";
-  pipes=[];score=0;alive=true;
-  bird.y=150;bird.vel=0;
-  requestAnimationFrame(draw);
+function makeLink(){
+  const receiver = document.getElementById("receiver").value.trim() || "Recipient";
+  const message = document.getElementById("message").value.trim() || "(No message)";
+  if(!selectedFlower){ alert("Please select a flower 🌸"); return; }
+  const payload = encodeURIComponent(JSON.stringify({receiver, message, flower: selectedFlower}));
+  const url = window.location.origin + window.location.pathname + "?data=" + payload;
+  document.getElementById("link").innerHTML =
+    `<p>Share this link:</p><a href="${url}" target="_blank">${url}</a>`;
+  document.getElementById("qr").innerHTML = "";
+  new QRCode(document.getElementById("qr"), { text: url, width: 220, height: 220 });
 }
-function draw(){
-  ctx.fillStyle="#b3e6ff";ctx.fillRect(0,0,cvs.width,cvs.height);
-  // Bird
-  bird.vel+=bird.gravity;bird.y+=bird.vel;
-  ctx.fillStyle="#ff85b3";ctx.beginPath();
-  ctx.arc(bird.x,bird.y,12,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="#fff";ctx.fillRect(bird.x+5,bird.y-3,6,6);
-  // Pipes
-  if(frame%90===0){
-    const top=Math.random()*200+50;
-    pipes.push({x:cvs.width,w:50,top:top,gap:100});
-  }
-  for(let i=0;i<pipes.length;i++){
-    let p=pipes[i];
-    p.x-=2;
-    ctx.font="28px sans-serif";ctx.textAlign="center";
-    for(let y=0;y<p.top;y+=28)ctx.fillText(flower.split(" ")[0],p.x+25,y+20);
-    for(let y=p.top+p.gap;y<cvs.height;y+=28)ctx.fillText(flower.split(" ")[0],p.x+25,y);
-    // collision
-    if(bird.x+12>p.x&&bird.x-12<p.x+p.w&&(bird.y-12<p.top||bird.y+12>p.top+p.gap)) alive=false;
-    if(p.x+p.w<bird.x&&!p.passed){score++;p.passed=true;}
-  }
-  pipes=pipes.filter(p=>p.x>-60);
-  if(bird.y+12>cvs.height||bird.y-12<0) alive=false;
-  ctx.fillStyle="#d63384";ctx.font="20px sans-serif";ctx.fillText("Score: "+score,60,30);
-  if(alive){frame++;requestAnimationFrame(draw);}
-  else ctx.fillText("Game Over 💔 (Press space/click to restart)",cvs.width/2,cvs.height/2);
-}
-function flap(){if(alive)bird.vel=bird.lift;else startGame();}
-cvs.addEventListener("mousedown",flap);
-window.addEventListener("keydown",e=>{if(e.code==="Space")flap();});
 
-/* -------- Reveal Bouquet -------- */
-document.getElementById("reveal").onclick=()=>{
-  const r=document.getElementById("receiver").value.trim()||"Recipient";
-  const m=document.getElementById("message").value.trim()||"(No message)";
-  const payload=encodeURIComponent(JSON.stringify({receiver:r,message:m,flower:flower}));
-  const url=window.location.origin+window.location.pathname+"?data="+payload;
-  document.getElementById("view").style.display="block";
-  document.getElementById("viewName").innerText=r;
-  document.getElementById("viewFlower").innerText=flower.split(" ")[0];
-  document.getElementById("viewMsg").innerText=m;
-  document.getElementById("link").innerHTML=`<p>Shareable link:</p><a href="${url}" target="_blank">${url}</a>`;
-  new QRCode(document.getElementById("qr"),{text:url,width:200,height:200});
-};
-
-/* -------- Auto bouquet view if link visited -------- */
 (function(){
-  const params=new URLSearchParams(location.search);
+  const params = new URLSearchParams(window.location.search);
   if(params.has("data")){
-    try{
-      const o=JSON.parse(decodeURIComponent(params.get("data")));
-      document.getElementById("setup").style.display="none";
-      document.getElementById("game").style.display="none";
-      document.getElementById("reveal").style.display="none";
-      document.getElementById("view").style.display="block";
-      document.getElementById("viewName").innerText=o.receiver;
-      document.getElementById("viewFlower").innerText=o.flower.split(" ")[0];
-      document.getElementById("viewMsg").innerText=o.message;
-    }catch(e){}
+    try {
+      const obj = JSON.parse(decodeURIComponent(params.get("data")));
+      window.__bouquetData = obj;
+      startGameWithFlower(obj.flower);
+    } catch(e) { console.error("Invalid bouquet data", e); }
   }
 })();
+
+function revealBouquet() {
+  const obj = window.__bouquetData;
+  if(!obj) return;
+  document.getElementById("create").style.display = "none";
+  document.getElementById("view").style.display = "block";
+  document.getElementById("viewName").innerText = obj.receiver;
+  document.getElementById("viewFlower").innerText = obj.flower.split(" ")[0];
+  document.getElementById("viewMsg").innerText = obj.message;
+}
+
+let canvas, ctx;
+let cw = 760, ch = 430;
+let bird, pipes, frameCount, gameInterval, running;
+let flowerEmoji = "🌷";
+let scoreEl = null;
+let targetScore = 5; // 🔑 Must reach this score to unlock bouquet
+
+function startGameWithFlower(flowerString){
+  flowerEmoji = (flowerString && flowerString.length>0) ? flowerString.trim().split(" ")[0] : "🌷";
+  document.getElementById("gameOverlay").style.display = "flex";
+  document.getElementById("finishNotice").style.display = "none";
+  scoreEl = document.getElementById("score");
+  canvas = document.getElementById("gameCanvas");
+  ctx = canvas.getContext("2d");
+  resetGame();
+  attachInputHandlers();
+  running = true;
+  gameInterval = setInterval(gameLoop, 1000/60);
+}
+
+function resetGame(){
+  bird = { x: 120, y: ch/2, vy: 0, width: 28, height: 20, gravity: 0.6, lift: -10, rotation: 0 };
+  pipes = [];
+  frameCount = 0;
+  scoreEl && (scoreEl.innerText = 0);
+  spawnPipe(120);
+}
+
+function spawnPipe(offsetX=0){
+  const gap = 120;
+  const minY = 60;
+  const maxY = ch - 60 - gap;
+  const top = Math.floor(Math.random()*(maxY-minY+1)+minY);
+  pipes.push({ x: cw + offsetX, top: top, gap: gap, passed: false });
+}
+
+function gameLoop(){ update(); draw(); }
+
+function update(){
+  frameCount++;
+  bird.vy += bird.gravity;
+  bird.y += bird.vy;
+  bird.rotation = Math.max(-0.6, Math.min(0.6, bird.vy / 10));
+  if(bird.y + bird.height/2 >= ch || bird.y - bird.height/2 <= 0){ gameOver(); return; }
+  for(let i=pipes.length-1;i>=0;i--){
+    pipes[i].x -= 2.6;
+    if(pipes[i].x < -80){ pipes.splice(i,1); }
+    else {
+      if(pipes.length < 4 && (frameCount % 90 === 0)) spawnPipe();
+      if(!pipes[i].passed && pipes[i].x + 40 < bird.x){ pipes[i].passed = true; increaseScore(); }
+      if(rectIntersect(bird.x - bird.width/2, bird.y - bird.height/2, bird.width, bird.height,
+                       pipes[i].x, 0, 50, pipes[i].top)) { gameOver(); return; }
+      if(rectIntersect(bird.x - bird.width/2, bird.y - bird.height/2, bird.width, bird.height,
+                       pipes[i].x, pipes[i].top + pipes[i].gap, 50, ch - (pipes[i].top + pipes[i].gap))) { gameOver(); return; }
+    }
+  }
+}
+
+function rectIntersect(x1,y1,w1,h1,x2,y2,w2,h2){
+  return !(x2 > x1 + w1 || x2 + w2 < x1 || y2 > y1 + h1 || y2 + h2 < y1);
+}
+
+function increaseScore(){
+  const current = parseInt(scoreEl.innerText || "0", 10);
+  scoreEl.innerText = current + 1;
+  if(current + 1 >= targetScore) winGame();
+}
+
+function gameOver(){ stopGame(); alert("Oops! You crashed. Try again to access the bouquet 💌"); }
+function winGame(){
+  stopGame();
+  document.getElementById("finishNotice").style.display = "block";
+  setTimeout(() => {
+    document.getElementById("gameOverlay").style.display = "none";
+    revealBouquet();
+  }, 800);
+}
+function stopGame(){ running = false; if(gameInterval) clearInterval(gameInterval); detachInputHandlers(); }
+
+function pauseGame(){
+  if(running){ stopGame(); document.getElementById("finishNotice").innerText = "Paused"; document.getElementById("finishNotice").style.display = "block";
+    setTimeout(()=>document.getElementById("finishNotice").style.display = "none", 600);
+  } else { running = true; gameInterval = setInterval(gameLoop, 1000/60); document.getElementById("finishNotice").style.display = "none"; }
+}
+function restartGame(){ stopGame(); resetGame(); running = true; gameInterval = setInterval(gameLoop, 1000/60); document.getElementById("finishNotice").style.display = "none"; }
+
+function flap(){ bird.vy = bird.lift; }
+function attachInputHandlers(){
+  canvas.addEventListener("mousedown", flap);
+  canvas.addEventListener("touchstart", function(e){ e.preventDefault(); flap(); }, {passive:false});
+  window.addEventListener("keydown", keyHandler);
+}
+function detachInputHandlers(){
+  canvas.removeEventListener("mousedown", flap);
+  canvas.removeEventListener("touchstart", flap);
+  window.removeEventListener("keydown", keyHandler);
+}
+function keyHandler(e){ if(e.code === "Space" || e.code === "ArrowUp") { e.preventDefault(); flap(); } }
+
+function draw(){
+  ctx.clearRect(0,0,cw,ch);
+  drawBackground();
+  drawPipes();
+  drawBird();
+}
+function drawBackground(){
+  ctx.fillStyle = "rgba(0,0,0,0.04)";
+  ctx.fillRect(0,ch-28,cw,28);
+  ctx.globalAlpha = 0.12;
+  const cloudOffset = (frameCount/2)%cw;
+  ctx.font = "40px serif";
+  ctx.fillText("☁️ ☁️", cw - cloudOffset, 60);
+  ctx.globalAlpha = 1;
+}
+function drawBird(){
+  const x = bird.x, y = bird.y;
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(bird.rotation);
+  ctx.beginPath();
+  ctx.fillStyle = "#ff82b3";
+  ctx.ellipse(0,0,18,14,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.fillStyle = "#ffd1e6";
+  ctx.ellipse(-2,2,8,5, -0.4,0,Math.PI*2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.fillStyle = "white";
+  ctx.arc(6,-4,4,0,Math.PI*2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.fillStyle = "black";
+  ctx.arc(7,-4,1.6,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+function drawPipes(){
+  for(let i=0;i<pipes.length;i++){
+    const p = pipes[i], x = p.x, w = 50;
+    ctx.fillStyle = "#7fbf7f33";
+    ctx.fillRect(x, 0, w, p.top);
+    ctx.fillRect(x, p.top + p.gap, w, ch - (p.top + p.gap));
+    ctx.font = "28px serif";
+    ctx.textAlign = "center";
+    const f = flowerEmoji;
+    const topCount = Math.floor((p.top)/30);
+    for(let j=0;j<topCount;j++) ctx.fillText(f, x + w/2, 18 + j*30);
+    const bottomStart = p.top + p.gap;
+    const bottomCount = Math.floor((ch - bottomStart)/30);
+    for(let j=0;j<bottomCount;j++) ctx.fillText(f, x + w/2, bottomStart + 18 + j*30);
+    ctx.fillStyle = "#6f6f6f22";
+    ctx.fillRect(x-6, p.top - 6, w+12, 8);
+    ctx.fillRect(x-6, p.top + p.gap -2, w+12, 8);
+  }
+}
 </script>
 </body>
 </html>
