@@ -103,16 +103,17 @@ function makeLink(){
 function startGame(data){
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
-  const flower = data.flower.split(" ")[0]; // emoji only
+  const flower = data.flower.split(" ")[0];
   let birdY = canvas.height/2, birdVel = 0;
-  const gravity = 0.30;   // 🌟 slower fall (was 0.45)
-  const jump = -7.5;      // slightly softer jump
+  const gravity = 0.15;    // 🌟 super gentle fall
+  const jump = -6;         // softer jump
   const pillars = [];
   let score = 0;
   const targetScore = 5;
   const birdColor = "pink";
   let gameOver = false;
   let restartReady = false;
+  let frameCount = 0;
 
   // Controls
   document.addEventListener("keydown",()=>{ if(!gameOver) birdVel = jump; });
@@ -122,7 +123,7 @@ function startGame(data){
   });
 
   function addPillar(){
-    const gap = 200; // 🌟 much larger vertical gap between top and bottom
+    const gap = 230; // 🌟 huge vertical gap
     const topH = Math.random()*(canvas.height-gap-40)+20;
     pillars.push({x:canvas.width, top:topH, width:50});
   }
@@ -138,18 +139,21 @@ function startGame(data){
     ctx.arc(60,birdY,15,0,Math.PI*2);
     ctx.fill();
 
+    // Add pillar less often for wider horizontal spacing
+    frameCount++;
+    if(frameCount % 140 === 0) addPillar(); // 🌟 lower frequency (bigger horizontal gap)
+
     // Pillars
-    if(Math.random() < 0.02) addPillar();
     for(let i=pillars.length-1;i>=0;i--){
       const p = pillars[i];
-      p.x -= 1.8; // slower horizontal speed
+      p.x -= 1.5; // slow horizontal speed
       ctx.font="24px serif";
       for(let y=0;y<p.top;y+=24) ctx.fillText(flower,p.x,y);
-      for(let y=p.top+200;y<canvas.height;y+=24) ctx.fillText(flower,p.x,y);
+      for(let y=p.top+230;y<canvas.height;y+=24) ctx.fillText(flower,p.x,y);
 
       // collision
       if(60+15>p.x && 60-15<p.x+p.width){
-        if(birdY-15<p.top || birdY+15>p.top+200) gameOver = true;
+        if(birdY-15<p.top || birdY+15>p.top+230) gameOver = true;
       }
       // scoring
       if(p.x + p.width < 60 && !p.scored){ score++; p.scored = true; }
@@ -157,7 +161,7 @@ function startGame(data){
       if(p.x < -p.width) pillars.splice(i,1);
     }
 
-    // Ground/ceiling collision
+    // Ground/ceiling
     if(birdY+15>canvas.height || birdY-15<0) gameOver = true;
 
     // Score display
